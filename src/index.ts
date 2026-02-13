@@ -2,6 +2,7 @@ import express from "express";
 import "dotenv/config"; // Loads environment variables from .env file
 import Database from "./config/dbConnection";
 import authRouter from "./module/auth/router/auth.router";
+import specsRouter from "./module/specs/router/specs.router";
 
 const app = express();
 
@@ -18,9 +19,12 @@ async function startServer() {
 
     // Middleware to parse incoming JSON requests
     app.use(express.json());
-
+    app.get("/health", (_req, res) => {
+      res.status(200).json({ status: "OK" });
+    });
     // Register Auth module routes
     app.use(`${baseUrl}/auth`, authRouter);
+    app.use(`${baseUrl}/specs`, specsRouter);
 
     // Start Express server only after DB is connected
     app.listen(port, () => {

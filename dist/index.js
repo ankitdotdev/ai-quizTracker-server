@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 require("dotenv/config"); // Loads environment variables from .env file
 const dbConnection_1 = __importDefault(require("./config/dbConnection"));
 const auth_router_1 = __importDefault(require("./module/auth/router/auth.router"));
+const specs_router_1 = __importDefault(require("./module/specs/router/specs.router"));
 const app = (0, express_1.default)();
 // Use PORT from environment, fallback to 8001 for local development
 const port = process.env.PORT || 8001;
@@ -18,8 +19,12 @@ async function startServer() {
         const baseUrl = "/api/v1";
         // Middleware to parse incoming JSON requests
         app.use(express_1.default.json());
+        app.get("/health", (_req, res) => {
+            res.status(200).json({ status: "OK" });
+        });
         // Register Auth module routes
         app.use(`${baseUrl}/auth`, auth_router_1.default);
+        app.use(`${baseUrl}/specs`, specs_router_1.default);
         // Start Express server only after DB is connected
         app.listen(port, () => {
             console.log(`Server is listening to port =>`, port);
