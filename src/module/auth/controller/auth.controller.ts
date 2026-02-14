@@ -45,7 +45,7 @@ class AuthController {
       const token = await AuthService.loginService(email, password);
 
       // Send token in standardized response
-      return sendSuccess(res, 200, "Loning Successfull!", token);
+      return sendSuccess(res, 200, "Login Successfull!", token);
     } catch (error) {
       // Handle business-level errors (invalid credentials, etc.)
       if (error instanceof ThrowError) {
