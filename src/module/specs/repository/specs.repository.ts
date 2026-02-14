@@ -1,5 +1,9 @@
 import { ObjectId } from "mongodb";
-import { GenerateSpecInput, SpecInput } from "../model/specs.model";
+import {
+  AISpecOutput,
+  GenerateSpecInput,
+  SpecInput,
+} from "../model/specs.model";
 import Database from "../../../config/dbConnection";
 import ThrowError from "../../../middleware/errorHandler";
 
@@ -12,6 +16,10 @@ export class SpecRepository {
    * - Regeneration of existing spec (increment version)
    * - Versioned output storage
    */
+
+  private static specInputCollectionName = "specs_input";
+  private static specOutputCollectionName = "specs_output";
+
   static async storeInputOutputOfSpec(
     inputData: GenerateSpecInput,
     outputData: any,
@@ -21,8 +29,8 @@ export class SpecRepository {
     const db = Database.getDB();
 
     // Collections for input metadata and versioned outputs
-    const inputCollection = db.collection("specs_input");
-    const outputCollection = db.collection("specs_output");
+    const inputCollection = db.collection(this.specInputCollectionName);
+    const outputCollection = db.collection(this.specOutputCollectionName);
 
     // Ensure user context exists
     if (!userId) {
@@ -101,8 +109,9 @@ export class SpecRepository {
   }
 
   static async getSpecList(userId: string): Promise<SpecInput[]> {
-    const specInputCollection =
-      Database.getDB().collection<SpecInput>("specs_input");
+    const specInputCollection = Database.getDB().collection<SpecInput>(
+      this.specInputCollectionName,
+    );
 
     const data = await specInputCollection
       .find(
@@ -114,6 +123,43 @@ export class SpecRepository {
       .toArray();
 
     return data;
+  }
+
+  static async getSpecOutputCheck(specId: string): Promise<boolean> {
+    const specOutPutCollection = Database.getDB().collection(
+      this.specOutputCollectionName,
+    );
+
+    const data = await specOutPutCollection.findOne(
+      {
+        _id: new ObjectId(specId),
+      },
+      { projection: { _id: 1 } },
+    );
+
+    return Boolean(data?._id);
+  }
+
+  static async updateSpecs(
+    userId: string,
+    specId: string,
+    updatedData: Partial<AISpecOutput>,
+  ): Promise<boolean> {
+    const specOutPutCollection = Database.getDB().collection(
+      this.specOutputCollectionName,
+    );
+
+    const { modifiedCount } = await specOutPutCollection.updateOne(
+      {
+        _id: new ObjectId(specId),
+        userId: new ObjectId(userId),
+      },
+      {
+        $set: { ...updatedData },
+      },
+    );
+
+    return modifiedCount > 0;
   }
 }
 
