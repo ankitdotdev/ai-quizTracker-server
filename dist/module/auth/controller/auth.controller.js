@@ -40,7 +40,7 @@ class AuthController {
             // Validate credentials and generate JWT token
             const token = await auth_service_1.default.loginService(email, password);
             // Send token in standardized response
-            return (0, response_handler_1.sendSuccess)(res, 200, "Loning Successfull!", token);
+            return (0, response_handler_1.sendSuccess)(res, 200, "Login Successfull!", token);
         }
         catch (error) {
             // Handle business-level errors (invalid credentials, etc.)
